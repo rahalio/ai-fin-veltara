@@ -1,0 +1,797 @@
+openapi: 3.0.3
+info:
+  title: Veltara
+  version: 0.1.0
+  description: Suitability-gated AI wealth-advice and strategy marketplace for regulated brokers.
+  x-product-slug: ai-fin-veltara
+  x-source: ai-in-financial/AITrading_WP_EN/
+servers:
+- url: https://api.example.com
+tags:
+- name: Profiles
+  description: Client risk profiles
+- name: Strategies
+  description: AI/human/hybrid strategy packages
+- name: Recommendations
+  description: Profile-matched recommendations
+- name: Gates
+  description: Suitability gate decisions
+- name: Marketplace
+  description: Advice marketplace contracts
+- name: Freezes
+  description: Strategy advisor model freezes
+- name: Audit
+  description: Advice audit exports
+paths:
+  /v1/clients/{clientId}/profile:
+    parameters:
+    - $ref: '#/components/parameters/ClientId'
+    get:
+      operationId: getClientProfile
+      tags:
+      - Profiles
+      security: &id001
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeClientProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      operationId: upsertClientProfile
+      tags:
+      - Profiles
+      security: *id001
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeClientProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientProfileUpsert'
+  /v1/strategies:
+    get:
+      operationId: listStrategies
+      tags:
+      - Strategies
+      security:
+      - ApiKeyAuth: []
+      - BearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeStrategyPackage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: createStrategy
+      tags:
+      - Strategies
+      security: *id001
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeStrategyPackage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StrategyPackageCreate'
+  /v1/strategies/{strategyId}:
+    parameters:
+    - $ref: '#/components/parameters/StrategyId'
+    get:
+      operationId: getStrategy
+      tags:
+      - Strategies
+      security: *id001
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeStrategyPackage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/clients/{clientId}/recommendations:
+    parameters:
+    - $ref: '#/components/parameters/ClientId'
+    get:
+      operationId: listRecommendations
+      tags:
+      - Recommendations
+      security: *id001
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeRecommendation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: generateRecommendations
+      tags:
+      - Recommendations
+      security: *id001
+      responses:
+        '201':
+          description: Generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeRecommendation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /v1/recommendations/{recommendationId}/gate:
+    parameters:
+    - $ref: '#/components/parameters/RecommendationId'
+    post:
+      operationId: decideRecommendationGate
+      tags:
+      - Gates
+      security: *id001
+      responses:
+        '201':
+          description: Gate recorded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeGateDecision'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GateDecisionCreate'
+  /v1/marketplace/contracts:
+    get:
+      operationId: listMarketplaceContracts
+      tags:
+      - Marketplace
+      security: *id001
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeMarketplaceContract'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+  /v1/freezes:
+    get:
+      operationId: listFreezes
+      tags:
+      - Freezes
+      security: *id001
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnvelopeFreezeOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      parameters:
+      - $ref: '#/components/parameters/Cursor'
+      - $ref: '#/components/parameters/Limit'
+    post:
+      operationId: createFreeze
+      tags:
+      - Freezes
+      security: *id001
+      responses:
+        '201':
+          description: Freeze created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeFreezeOrder'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FreezeOrderCreate'
+  /v1/audit/exports:
+    post:
+      operationId: createAdviceAuditExport
+      tags:
+      - Audit
+      security: *id001
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - clientId
+              - from
+              - to
+              properties:
+                clientId:
+                  type: string
+                from:
+                  type: string
+                  format: date-time
+                to:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Export created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataEnvelopeAdviceAuditExport'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Cursor:
+      name: cursor
+      in: query
+      schema:
+        type: string
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+    ClientId:
+      name: clientId
+      in: path
+      required: true
+      schema:
+        type: string
+    StrategyId:
+      name: strategyId
+      in: path
+      required: true
+      schema:
+        type: string
+    RecommendationId:
+      name: recommendationId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnprocessableEntity:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  schemas:
+    ResponseMeta:
+      type: object
+      required:
+      - requestId
+      - timestamp
+      properties:
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    Problem:
+      type: object
+      required:
+      - type
+      - title
+      - status
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+    ClientProfile:
+      type: object
+      required:
+      - id
+      - riskScore
+      - status
+      properties:
+        id:
+          type: string
+        riskScore:
+          type: number
+        horizonYears:
+          type: integer
+        hardLossLimitPct:
+          type: number
+        status:
+          type: string
+          enum:
+          - active
+          - frozen
+    ClientProfileUpsert:
+      type: object
+      required:
+      - riskScore
+      properties:
+        riskScore:
+          type: number
+        horizonYears:
+          type: integer
+        hardLossLimitPct:
+          type: number
+    StrategyPackage:
+      type: object
+      required:
+      - id
+      - name
+      - provenance
+      - status
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        provenance:
+          type: string
+          enum:
+          - ai
+          - human
+          - hybrid
+        modelVersionId:
+          type: string
+        advisorId:
+          type: string
+        sharpeClaim:
+          type: number
+        evidenceStatus:
+          type: string
+          enum:
+          - unverified
+          - verified
+          - rejected
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+          - frozen
+    StrategyPackageCreate:
+      type: object
+      required:
+      - name
+      - provenance
+      properties:
+        name:
+          type: string
+        provenance:
+          type: string
+          enum:
+          - ai
+          - human
+          - hybrid
+        modelVersionId:
+          type: string
+        advisorId:
+          type: string
+        thesis:
+          type: string
+    Recommendation:
+      type: object
+      required:
+      - id
+      - clientId
+      - strategyId
+      - status
+      properties:
+        id:
+          type: string
+        clientId:
+          type: string
+        strategyId:
+          type: string
+        matchReasons:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: string
+        status:
+          type: string
+          enum:
+          - pending_gate
+          - approved
+          - blocked
+    GateDecision:
+      type: object
+      required:
+      - id
+      - recommendationId
+      - outcome
+      properties:
+        id:
+          type: string
+        recommendationId:
+          type: string
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - override
+        reasons:
+          type: array
+          items:
+            type: string
+        decidedBy:
+          type: string
+    GateDecisionCreate:
+      type: object
+      required:
+      - outcome
+      properties:
+        outcome:
+          type: string
+          enum:
+          - pass
+          - fail
+          - override
+        reasons:
+          type: array
+          items:
+            type: string
+        overrideJustification:
+          type: string
+    MarketplaceContract:
+      type: object
+      required:
+      - id
+      - clientId
+      - strategyId
+      - status
+      properties:
+        id:
+          type: string
+        clientId:
+          type: string
+        strategyId:
+          type: string
+        feeBps:
+          type: number
+        scope:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - disputed
+          - closed
+    FreezeOrder:
+      type: object
+      required:
+      - id
+      - targetType
+      - targetId
+      - status
+      properties:
+        id:
+          type: string
+        targetType:
+          type: string
+          enum:
+          - strategy
+          - advisor
+          - model
+        targetId:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - lifted
+    FreezeOrderCreate:
+      type: object
+      required:
+      - targetType
+      - targetId
+      - reason
+      properties:
+        targetType:
+          type: string
+          enum:
+          - strategy
+          - advisor
+          - model
+        targetId:
+          type: string
+        reason:
+          type: string
+    AdviceAuditExport:
+      type: object
+      required:
+      - id
+      - clientId
+      properties:
+        id:
+          type: string
+        clientId:
+          type: string
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        downloadUrl:
+          type: string
+          format: uri
+    DataEnvelopeClientProfile:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/ClientProfile'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeClientProfile:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/ClientProfile'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeStrategyPackage:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/StrategyPackage'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeStrategyPackage:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/StrategyPackage'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeRecommendation:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/Recommendation'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeRecommendation:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Recommendation'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeGateDecision:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/GateDecision'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeGateDecision:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/GateDecision'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeMarketplaceContract:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/MarketplaceContract'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeMarketplaceContract:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/MarketplaceContract'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeFreezeOrder:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/FreezeOrder'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeFreezeOrder:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/FreezeOrder'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    DataEnvelopeAdviceAuditExport:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          $ref: '#/components/schemas/AdviceAuditExport'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+    ListEnvelopeAdviceAuditExport:
+      type: object
+      required:
+      - data
+      - meta
+      properties:
+        data:
+          type: object
+          required:
+          - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/AdviceAuditExport'
+            nextCursor:
+              type: string
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'

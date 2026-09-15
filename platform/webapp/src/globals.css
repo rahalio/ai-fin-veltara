@@ -1,0 +1,181 @@
+@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+
+:root {
+  --color-ink: #e8eee6;
+  --color-forest-950: #0b1410;
+  --color-forest-900: #132019;
+  --color-forest-800: #1a2c22;
+  --color-champagne: #c6a75e;
+  --color-frost-ai: #7eb6d6;
+  --color-human: #a3b18a;
+  --color-hybrid: #9b8aa6;
+  --color-freeze: #c1121f;
+  --color-veil: #6c757d;
+  --font-display: "Cormorant Garamond", serif;
+  --font-body: "IBM Plex Sans", sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --motion-pass: 180ms ease-out;
+  --motion-freeze: 160ms ease-in;
+  --motion-veil: 240ms ease-in-out;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background:
+    radial-gradient(ellipse at top, rgba(198, 167, 94, 0.08), transparent 50%),
+    linear-gradient(180deg, var(--color-forest-950), #07100c 80%);
+  color: var(--color-ink);
+}
+
+h1,
+h2,
+h3,
+.brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.panel {
+  background: color-mix(in srgb, var(--color-forest-900) 88%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(8px);
+}
+
+.btn {
+  border: 1px solid color-mix(in srgb, var(--color-champagne) 45%, transparent);
+  background: transparent;
+  color: var(--color-ink);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.9rem;
+  cursor: pointer;
+  transition: background var(--motion-pass), border-color var(--motion-pass);
+}
+
+.btn:hover {
+  background: color-mix(in srgb, var(--color-champagne) 16%, transparent);
+}
+
+.btn-primary {
+  background: var(--color-champagne);
+  color: var(--color-forest-950);
+  border-color: var(--color-champagne);
+  font-weight: 600;
+}
+
+.btn-freeze {
+  background: var(--color-freeze);
+  border-color: var(--color-freeze);
+  color: #fff;
+  animation: freezeDrop var(--motion-freeze);
+}
+
+@keyframes freezeDrop {
+  from {
+    transform: translateY(-6px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.field input,
+.field select,
+.field textarea {
+  background: var(--color-forest-950);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+  color: var(--color-ink);
+  border-radius: var(--radius-sm);
+  padding: 0.55rem 0.7rem;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+
+.plaque {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.plaque.ai {
+  color: var(--color-forest-950);
+  background: var(--color-frost-ai);
+}
+
+.plaque.human {
+  color: var(--color-forest-950);
+  background: var(--color-human);
+}
+
+.plaque.hybrid {
+  color: var(--color-forest-950);
+  background: var(--color-hybrid);
+}
+
+.seal {
+  color: var(--color-champagne);
+}
+
+.veil {
+  color: var(--color-veil);
+  opacity: 0.85;
+  transition: opacity var(--motion-veil);
+}
+
+.muted {
+  color: color-mix(in srgb, var(--color-ink) 65%, transparent);
+}

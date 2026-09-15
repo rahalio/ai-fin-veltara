@@ -1,0 +1,160 @@
+openapi: 3.1.0
+info:
+  title: Recommendations schemas
+  version: 0.1.0
+  description: |
+    Profile-matched recommendations and pre-trade risk parameter sets.
+paths: {}
+components:
+  schemas:
+    RecommendationId:
+      type: string
+      pattern: '^rec_[0-9A-HJKMNP-TV-Z]{26}$'
+    RiskParameterSetId:
+      type: string
+      pattern: '^rec_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    ClientId:
+      type: string
+      pattern: '^cli_[0-9A-HJKMNP-TV-Z]{26}$'
+    StrategyId:
+      type: string
+      pattern: '^stg_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    RecommendationStatus:
+      type: string
+      enum: [pending_gate, approved, blocked, superseded]
+    Recommendation:
+      type: object
+      required: [id, clientId, strategyId, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "RECOMMENDATION"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "RECOMMENDATION#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/RecommendationId'
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        strategyId:
+          $ref: '#/components/schemas/StrategyId'
+        matchReasons:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: string
+          description: Thesis, factors, risk stats, and profile fit (BR-3).
+        rankingScore:
+          type: number
+        status:
+          $ref: '#/components/schemas/RecommendationStatus'
+        riskParameterSetId:
+          $ref: '#/components/schemas/RiskParameterSetId'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RecommendationCreate:
+      type: object
+      required: [strategyId]
+      properties:
+        strategyId:
+          $ref: '#/components/schemas/StrategyId'
+        matchReasons:
+          type: array
+          items:
+            type: string
+        explanation:
+          type: string
+        rankingScore:
+          type: number
+    RiskParameterSet:
+      type: object
+      required: [id, recommendationId, maxLossPct, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "RISK_PARAMETER_SET"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "RISK_PARAMETER_SET#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/RiskParameterSetId'
+        recommendationId:
+          $ref: '#/components/schemas/RecommendationId'
+        maxLossPct:
+          type: number
+          minimum: 0
+          maximum: 100
+        targetProbability:
+          type: number
+          minimum: 0
+          maximum: 1
+        hedgeSuggestions:
+          type: array
+          items:
+            type: string
+        concentrationNote:
+          type: string
+        status:
+          type: string
+          enum: [draft, attached, overridden]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    RiskParameterSetUpsert:
+      type: object
+      required: [maxLossPct]
+      properties:
+        maxLossPct:
+          type: number
+          minimum: 0
+          maximum: 100
+        targetProbability:
+          type: number
+          minimum: 0
+          maximum: 1
+        hedgeSuggestions:
+          type: array
+          items:
+            type: string
+        concentrationNote:
+          type: string
+    RecommendationResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Recommendation'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    RecommendationListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Recommendation'
+    RecommendationListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RecommendationListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    RiskParameterSetResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/RiskParameterSet'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Gates schemas
+  version: 0.1.0
+  description: |
+    Suitability gate decisions including dual-control overrides.
+paths: {}
+components:
+  schemas:
+    GateDecisionId:
+      type: string
+      pattern: '^gat_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    RecommendationId:
+      type: string
+      pattern: '^rec_[0-9A-HJKMNP-TV-Z]{26}$'
+    GateOutcome:
+      type: string
+      enum: [pass, fail, override]
+    GateDecision:
+      type: object
+      required: [id, recommendationId, outcome, decidedBy, decidedAt]
+      x-dynamodb:
+        entityType: "GATE_DECISION"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "GATE_DECISION#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/GateDecisionId'
+        recommendationId:
+          $ref: '#/components/schemas/RecommendationId'
+        outcome:
+          $ref: '#/components/schemas/GateOutcome'
+        reasons:
+          type: array
+          items:
+            type: string
+        overrideJustification:
+          type: string
+        secondApproverId:
+          type: string
+          description: Required for near-miss dual-control override.
+        decidedBy:
+          type: string
+        decidedAt:
+          type: string
+          format: date-time
+    GateDecisionCreate:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          $ref: '#/components/schemas/GateOutcome'
+        reasons:
+          type: array
+          items:
+            type: string
+        overrideJustification:
+          type: string
+        secondApproverId:
+          type: string
+    GateDecisionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/GateDecision'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    GateDecisionListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GateDecision'
+    GateDecisionListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/GateDecisionListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

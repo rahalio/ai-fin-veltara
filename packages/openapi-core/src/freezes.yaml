@@ -1,0 +1,126 @@
+openapi: 3.1.0
+info:
+  title: Freezes API
+  version: 0.1.0
+  description: |
+    Kill-switch freezes for strategy, advisor, or model suspension within minutes (BR-10).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: frz
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Freezes
+    description: Strategy advisor model freezes
+paths:
+  /v1/freezes:
+    get:
+      operationId: listFreezeOrders
+      tags: [Freezes]
+      summary: List freeze orders
+      x-repository: FreezeOrder
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: ./freezes.schemas.yaml#/components/schemas/FreezeStatus
+        - name: targetType
+          in: query
+          schema:
+            $ref: ./freezes.schemas.yaml#/components/schemas/FreezeTargetType
+      responses:
+        '200':
+          description: Freezes
+          content:
+            application/json:
+              schema:
+                $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createFreezeOrder
+      tags: [Freezes]
+      summary: Issue a kill-switch freeze
+      x-repository: FreezeOrder
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderCreate
+      responses:
+        '201':
+          description: Freeze issued
+          content:
+            application/json:
+              schema:
+                $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/freezes/{freezeId}:
+    get:
+      operationId: getFreezeOrder
+      tags: [Freezes]
+      summary: Get freeze order
+      x-repository: FreezeOrder
+      parameters:
+        - name: freezeId
+          in: path
+          required: true
+          schema:
+            $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderId
+      responses:
+        '200':
+          description: Freeze
+          content:
+            application/json:
+              schema:
+                $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/freezes/{freezeId}/lift:
+    post:
+      operationId: liftFreezeOrder
+      tags: [Freezes]
+      summary: Lift an active freeze
+      x-repository: FreezeOrder
+      parameters:
+        - name: freezeId
+          in: path
+          required: true
+          schema:
+            $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      responses:
+        '200':
+          description: Freeze lifted
+          content:
+            application/json:
+              schema:
+                $ref: ./freezes.schemas.yaml#/components/schemas/FreezeOrderResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

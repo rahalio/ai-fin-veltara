@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: Profiles schemas
+  version: 0.1.0
+  description: |
+    Client risk profiles and firm suitability policies.
+paths: {}
+components:
+  schemas:
+    ClientId:
+      type: string
+      pattern: '^cli_[0-9A-HJKMNP-TV-Z]{26}$'
+    PolicyId:
+      type: string
+      pattern: '^prf_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    ProfileStatus:
+      type: string
+      enum: [active, frozen]
+    ClientProfile:
+      type: object
+      required: [id, riskScore, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "CLIENT_PROFILE"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "CLIENT_PROFILE#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/ClientId'
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        horizonYears:
+          type: integer
+          minimum: 1
+          maximum: 50
+        hardLossLimitPct:
+          type: number
+          minimum: 0
+          maximum: 100
+        productPermissions:
+          type: array
+          items:
+            type: string
+        suitabilityPolicyId:
+          $ref: '#/components/schemas/PolicyId'
+        status:
+          $ref: '#/components/schemas/ProfileStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ClientProfileUpsert:
+      type: object
+      required: [riskScore]
+      properties:
+        riskScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        horizonYears:
+          type: integer
+          minimum: 1
+          maximum: 50
+        hardLossLimitPct:
+          type: number
+          minimum: 0
+          maximum: 100
+        productPermissions:
+          type: array
+          items:
+            type: string
+        suitabilityPolicyId:
+          $ref: '#/components/schemas/PolicyId'
+        status:
+          $ref: '#/components/schemas/ProfileStatus'
+    SuitabilityPolicy:
+      type: object
+      required: [id, name, version, rulesSummary, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "SUITABILITY_POLICY"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "SUITABILITY_POLICY#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/PolicyId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: string
+        rulesSummary:
+          type: string
+        maxRiskScore:
+          type: number
+        requireHumanGate:
+          type: boolean
+        status:
+          type: string
+          enum: [active, retired]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    SuitabilityPolicyUpsert:
+      type: object
+      required: [name, version, rulesSummary]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        version:
+          type: string
+        rulesSummary:
+          type: string
+        maxRiskScore:
+          type: number
+        requireHumanGate:
+          type: boolean
+        status:
+          type: string
+          enum: [active, retired]
+    ClientProfileResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ClientProfile'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    SuitabilityPolicyResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/SuitabilityPolicy'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    SuitabilityPolicyListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/SuitabilityPolicy'
+    SuitabilityPolicyListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/SuitabilityPolicyListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

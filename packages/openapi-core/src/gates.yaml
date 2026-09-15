@@ -1,0 +1,106 @@
+openapi: 3.1.0
+info:
+  title: Gates API
+  version: 0.1.0
+  description: |
+    Suitability gate decisions — pass, fail, or dual-control override (BR-1, BR-4).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: gat
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Gates
+    description: Suitability gate decisions
+paths:
+  /v1/gates:
+    get:
+      operationId: listGateDecisions
+      tags: [Gates]
+      summary: List gate decisions (compliance backlog)
+      x-repository: GateDecision
+      parameters:
+        - name: outcome
+          in: query
+          schema:
+            $ref: ./gates.schemas.yaml#/components/schemas/GateOutcome
+      responses:
+        '200':
+          description: Gate decisions
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/GateDecisionListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/recommendations/{recommendationId}/gate:
+    post:
+      operationId: decideRecommendationGate
+      tags: [Gates]
+      summary: Record suitability gate decision
+      x-repository: GateDecision
+      parameters:
+        - name: recommendationId
+          in: path
+          required: true
+          schema:
+            $ref: ./gates.schemas.yaml#/components/schemas/RecommendationId
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./gates.schemas.yaml#/components/schemas/GateDecisionCreate
+      responses:
+        '201':
+          description: Decision recorded
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/GateDecisionResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/gates/{gateDecisionId}:
+    get:
+      operationId: getGateDecision
+      tags: [Gates]
+      summary: Get gate decision
+      x-repository: GateDecision
+      parameters:
+        - name: gateDecisionId
+          in: path
+          required: true
+          schema:
+            $ref: ./gates.schemas.yaml#/components/schemas/GateDecisionId
+      responses:
+        '200':
+          description: Gate decision
+          content:
+            application/json:
+              schema:
+                $ref: ./gates.schemas.yaml#/components/schemas/GateDecisionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

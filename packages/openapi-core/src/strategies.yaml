@@ -1,0 +1,296 @@
+openapi: 3.1.0
+info:
+  title: Strategies API
+  version: 0.1.0
+  description: |
+    Strategy registry with AI/human/hybrid provenance, model versions, and advisors (BR-2, BR-7).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: stg
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Strategies
+    description: Strategy packages
+  - name: ModelVersions
+    description: AI model versions
+  - name: Advisors
+    description: Licensed advisors
+paths:
+  /v1/strategies:
+    get:
+      operationId: listStrategies
+      tags: [Strategies]
+      summary: List strategy packages
+      x-repository: StrategyPackage
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: ./strategies.schemas.yaml#/components/schemas/StrategyStatus
+        - name: provenance
+          in: query
+          schema:
+            $ref: ./strategies.schemas.yaml#/components/schemas/Provenance
+      responses:
+        '200':
+          description: Strategies
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createStrategy
+      tags: [Strategies]
+      summary: Submit a strategy package
+      x-repository: StrategyPackage
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/strategies/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        required: true
+        schema:
+          $ref: ./strategies.schemas.yaml#/components/schemas/StrategyId
+    get:
+      operationId: getStrategy
+      tags: [Strategies]
+      summary: Get strategy package
+      x-repository: StrategyPackage
+      responses:
+        '200':
+          description: Strategy
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateStrategy
+      tags: [Strategies]
+      summary: Update strategy (publish desk edits, evidence, retire)
+      x-repository: StrategyPackage
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageUpdate
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/StrategyPackageResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/model-versions:
+    get:
+      operationId: listModelVersions
+      tags: [ModelVersions]
+      summary: List model versions
+      x-repository: ModelVersion
+      responses:
+        '200':
+          description: Model versions
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/ModelVersionListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createModelVersion
+      tags: [ModelVersions]
+      summary: Register a model version
+      x-repository: ModelVersion
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./strategies.schemas.yaml#/components/schemas/ModelVersionCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/ModelVersionResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/model-versions/{modelVersionId}:
+    get:
+      operationId: getModelVersion
+      tags: [ModelVersions]
+      summary: Get model version
+      x-repository: ModelVersion
+      parameters:
+        - name: modelVersionId
+          in: path
+          required: true
+          schema:
+            $ref: ./strategies.schemas.yaml#/components/schemas/ModelVersionId
+      responses:
+        '200':
+          description: Model version
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/ModelVersionResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/advisors:
+    get:
+      operationId: listAdvisors
+      tags: [Advisors]
+      summary: List advisors
+      x-repository: Advisor
+      responses:
+        '200':
+          description: Advisors
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createAdvisor
+      tags: [Advisors]
+      summary: Onboard advisor
+      x-repository: Advisor
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/advisors/{advisorId}:
+    parameters:
+      - name: advisorId
+        in: path
+        required: true
+        schema:
+          $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorId
+    get:
+      operationId: getAdvisor
+      tags: [Advisors]
+      summary: Get advisor
+      x-repository: Advisor
+      responses:
+        '200':
+          description: Advisor
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    patch:
+      operationId: updateAdvisor
+      tags: [Advisors]
+      summary: Update advisor
+      x-repository: Advisor
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorUpdate
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./strategies.schemas.yaml#/components/schemas/AdvisorResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

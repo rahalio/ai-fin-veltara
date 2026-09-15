@@ -1,0 +1,11 @@
+---
+description: Never commit or push .codegen to GitHub
+alwaysApply: true
+---
+
+# `.codegen` must never be committed
+
+- **Never** `git add`, commit, or push `.codegen/` (or vendored `zero_codegen` trees) to GitHub.
+- `.codegen/` is listed in `.gitignore` as a safeguard; do not remove that entry.
+- Obtain the tool locally by copying from `zero-apps-codegen-scaffold` (or an equivalent local codegen tree), then set `package_scope` to `@veltara` and run `pnpm codegen:paths`.
+- Bundled OpenAPI under `packages/openapi-core/src/.bundled/` is also generated and must stay gitignored.

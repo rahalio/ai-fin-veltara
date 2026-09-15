@@ -1,0 +1,402 @@
+import { makeApi, Zodios, type ZodiosOptions } from '@zodios/core';
+import { z } from 'zod';
+
+const createMarketplaceContract_Body = z
+  .object({
+    clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+    strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+    feeBps: z.number().gte(0),
+    takeRateBps: z.number().gte(0),
+    scope: z.string(),
+    hardLossPct: z.number().optional(),
+  })
+  .passthrough();
+const ContractStatus = z.enum(['active', 'disputed', 'closed']);
+const ClientId = z.string();
+const Problem = z
+  .object({
+    type: z.string().url(),
+    title: z.string(),
+    status: z.number().int(),
+    detail: z.string(),
+    instance: z.string().url(),
+    code: z.string(),
+  })
+  .partial()
+  .passthrough();
+const MarketplaceContractId = z.string();
+const StrategyId = z.string();
+const MarketplaceContract = z
+  .object({
+    id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+    clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+    strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+    feeBps: z.number().gte(0),
+    takeRateBps: z.number().gte(0),
+    scope: z.string(),
+    hardLossPct: z.number().optional(),
+    status: z.enum(['active', 'disputed', 'closed']),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+  })
+  .passthrough();
+const MarketplaceContractListData = z
+  .object({
+    items: z.array(
+      z
+        .object({
+          id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+          clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+          strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+          feeBps: z.number().gte(0),
+          takeRateBps: z.number().gte(0),
+          scope: z.string(),
+          hardLossPct: z.number().optional(),
+          status: z.enum(['active', 'disputed', 'closed']),
+          createdAt: z.string().datetime({ offset: true }),
+          updatedAt: z.string().datetime({ offset: true }),
+        })
+        .passthrough()
+    ),
+  })
+  .passthrough();
+const ResponseMeta = z
+  .object({
+    requestId: z.string().uuid(),
+    correlationId: z.string(),
+    generatedAt: z.string().datetime({ offset: true }),
+  })
+  .partial()
+  .passthrough();
+const MarketplaceContractListResponse = z
+  .object({
+    data: z
+      .object({
+        items: z.array(
+          z
+            .object({
+              id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+              clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+              strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+              feeBps: z.number().gte(0),
+              takeRateBps: z.number().gte(0),
+              scope: z.string(),
+              hardLossPct: z.number().optional(),
+              status: z.enum(['active', 'disputed', 'closed']),
+              createdAt: z.string().datetime({ offset: true }),
+              updatedAt: z.string().datetime({ offset: true }),
+            })
+            .passthrough()
+        ),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+const MarketplaceContractCreate = z
+  .object({
+    clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+    strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+    feeBps: z.number().gte(0),
+    takeRateBps: z.number().gte(0),
+    scope: z.string(),
+    hardLossPct: z.number().optional(),
+  })
+  .passthrough();
+const MarketplaceContractResponse = z
+  .object({
+    data: z
+      .object({
+        id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+        clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+        strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+        feeBps: z.number().gte(0),
+        takeRateBps: z.number().gte(0),
+        scope: z.string(),
+        hardLossPct: z.number().optional(),
+        status: z.enum(['active', 'disputed', 'closed']),
+        createdAt: z.string().datetime({ offset: true }),
+        updatedAt: z.string().datetime({ offset: true }),
+      })
+      .passthrough(),
+    meta: z
+      .object({
+        requestId: z.string().uuid(),
+        correlationId: z.string(),
+        generatedAt: z.string().datetime({ offset: true }),
+      })
+      .partial()
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
+
+export const schemas: any = {
+  createMarketplaceContract_Body,
+  ContractStatus,
+  ClientId,
+  Problem,
+  MarketplaceContractId,
+  StrategyId,
+  MarketplaceContract,
+  MarketplaceContractListData,
+  ResponseMeta,
+  MarketplaceContractListResponse,
+  MarketplaceContractCreate,
+  MarketplaceContractResponse,
+};
+
+const endpoints = makeApi([
+  {
+    method: 'get',
+    path: '/v1/marketplace/contracts',
+    alias: 'listMarketplaceContracts',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'status',
+        type: 'Query',
+        schema: z.enum(['active', 'disputed', 'closed']).optional(),
+      },
+      {
+        name: 'clientId',
+        type: 'Query',
+        schema: z
+          .string()
+          .regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/)
+          .optional(),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            items: z.array(
+              z
+                .object({
+                  id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+                  feeBps: z.number().gte(0),
+                  takeRateBps: z.number().gte(0),
+                  scope: z.string(),
+                  hardLossPct: z.number().optional(),
+                  status: z.enum(['active', 'disputed', 'closed']),
+                  createdAt: z.string().datetime({ offset: true }),
+                  updatedAt: z.string().datetime({ offset: true }),
+                })
+                .passthrough()
+            ),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'post',
+    path: '/v1/marketplace/contracts',
+    alias: 'createMarketplaceContract',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'body',
+        type: 'Body',
+        schema: createMarketplaceContract_Body,
+      },
+      {
+        name: 'Idempotency-Key',
+        type: 'Header',
+        schema: z.string().min(1).max(128),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+            clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+            strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+            feeBps: z.number().gte(0),
+            takeRateBps: z.number().gte(0),
+            scope: z.string(),
+            hardLossPct: z.number().optional(),
+            status: z.enum(['active', 'disputed', 'closed']),
+            createdAt: z.string().datetime({ offset: true }),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 400,
+        description: `Malformed request`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+      {
+        status: 422,
+        description: `Semantically invalid request (e.g. PACK_EMPTY)`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+  {
+    method: 'get',
+    path: '/v1/marketplace/contracts/:contractId',
+    alias: 'getMarketplaceContract',
+    requestFormat: 'json',
+    parameters: [
+      {
+        name: 'contractId',
+        type: 'Path',
+        schema: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+      },
+    ],
+    response: z
+      .object({
+        data: z
+          .object({
+            id: z.string().regex(/^mkt_[0-9A-HJKMNP-TV-Z]{26}$/),
+            clientId: z.string().regex(/^cli_[0-9A-HJKMNP-TV-Z]{26}$/),
+            strategyId: z.string().regex(/^str_[0-9A-HJKMNP-TV-Z]{26}$/),
+            feeBps: z.number().gte(0),
+            takeRateBps: z.number().gte(0),
+            scope: z.string(),
+            hardLossPct: z.number().optional(),
+            status: z.enum(['active', 'disputed', 'closed']),
+            createdAt: z.string().datetime({ offset: true }),
+            updatedAt: z.string().datetime({ offset: true }),
+          })
+          .passthrough(),
+        meta: z
+          .object({
+            requestId: z.string().uuid(),
+            correlationId: z.string(),
+            generatedAt: z.string().datetime({ offset: true }),
+          })
+          .partial()
+          .passthrough()
+          .optional(),
+      })
+      .passthrough(),
+    errors: [
+      {
+        status: 401,
+        description: `Missing or invalid API key`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+      {
+        status: 404,
+        description: `Resource not found`,
+        schema: z
+          .object({
+            type: z.string().url(),
+            title: z.string(),
+            status: z.number().int(),
+            detail: z.string(),
+            instance: z.string().url(),
+            code: z.string(),
+          })
+          .partial()
+          .passthrough(),
+      },
+    ],
+  },
+]);
+
+export const api: any = new Zodios(
+  'https://api.ddd-codegen-starter.local/v1',
+  endpoints
+);
+
+export function createApiClient(baseUrl: string, options?: ZodiosOptions): any {
+  return new Zodios(baseUrl, endpoints, options);
+}

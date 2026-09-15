@@ -1,0 +1,81 @@
+openapi: 3.1.0
+info:
+  title: Freezes schemas
+  version: 0.1.0
+  description: |
+    Kill-switch freeze orders for strategies, advisors, and model versions.
+paths: {}
+components:
+  schemas:
+    FreezeOrderId:
+      type: string
+      pattern: '^frz_[0-9A-HJKMNP-TV-Z]{26}$'
+    FreezeTargetType:
+      type: string
+      enum: [strategy, advisor, model]
+    FreezeStatus:
+      type: string
+      enum: [active, lifted]
+    FreezeOrder:
+      type: object
+      required: [id, targetType, targetId, reason, status, issuedBy, issuedAt]
+      x-dynamodb:
+        entityType: "FREEZE_ORDER"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "FREEZE_ORDER#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/FreezeOrderId'
+        targetType:
+          $ref: '#/components/schemas/FreezeTargetType'
+        targetId:
+          type: string
+        reason:
+          type: string
+        status:
+          $ref: '#/components/schemas/FreezeStatus'
+        issuedBy:
+          type: string
+        issuedAt:
+          type: string
+          format: date-time
+        liftedAt:
+          type: string
+          format: date-time
+        liftedBy:
+          type: string
+    FreezeOrderCreate:
+      type: object
+      required: [targetType, targetId, reason]
+      properties:
+        targetType:
+          $ref: '#/components/schemas/FreezeTargetType'
+        targetId:
+          type: string
+        reason:
+          type: string
+    FreezeOrderResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/FreezeOrder'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    FreezeOrderListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FreezeOrder'
+    FreezeOrderListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/FreezeOrderListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

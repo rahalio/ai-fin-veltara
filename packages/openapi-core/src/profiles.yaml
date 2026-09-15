@@ -1,0 +1,172 @@
+openapi: 3.1.0
+info:
+  title: Profiles API
+  version: 0.1.0
+  description: |
+    Client risk profiles and firm suitability policies for advice gating (BR-1).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: prf
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Profiles
+    description: Client risk profiles
+  - name: Policies
+    description: Firm suitability policies
+paths:
+  /v1/clients/{clientId}/profile:
+    parameters:
+      - name: clientId
+        in: path
+        required: true
+        schema:
+          $ref: ./profiles.schemas.yaml#/components/schemas/ClientId
+    get:
+      operationId: getClientProfile
+      tags: [Profiles]
+      summary: Get client risk profile
+      x-repository: ClientProfile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/ClientProfileResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    put:
+      operationId: upsertClientProfile
+      tags: [Profiles]
+      summary: Create or update client risk profile
+      x-repository: ClientProfile
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./profiles.schemas.yaml#/components/schemas/ClientProfileUpsert
+      responses:
+        '200':
+          description: Upserted profile
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/ClientProfileResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/suitability-policies:
+    get:
+      operationId: listSuitabilityPolicies
+      tags: [Policies]
+      summary: List suitability policies
+      x-repository: SuitabilityPolicy
+      responses:
+        '200':
+          description: Policies
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createSuitabilityPolicy
+      tags: [Policies]
+      summary: Create suitability policy
+      x-repository: SuitabilityPolicy
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyUpsert
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/suitability-policies/{policyId}:
+    parameters:
+      - name: policyId
+        in: path
+        required: true
+        schema:
+          $ref: ./profiles.schemas.yaml#/components/schemas/PolicyId
+    get:
+      operationId: getSuitabilityPolicy
+      tags: [Policies]
+      summary: Get suitability policy
+      x-repository: SuitabilityPolicy
+      responses:
+        '200':
+          description: Policy
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    put:
+      operationId: upsertSuitabilityPolicy
+      tags: [Policies]
+      summary: Update suitability policy
+      x-repository: SuitabilityPolicy
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyUpsert
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: ./profiles.schemas.yaml#/components/schemas/SuitabilityPolicyResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

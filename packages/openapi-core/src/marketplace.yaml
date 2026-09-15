@@ -1,0 +1,102 @@
+openapi: 3.1.0
+info:
+  title: Marketplace API
+  version: 0.1.0
+  description: |
+    Marketplace contracts for copytrading fees, take-rates, and dispute scope (BR-6, BR-11).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: mkt
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Marketplace
+    description: Advice marketplace contracts
+paths:
+  /v1/marketplace/contracts:
+    get:
+      operationId: listMarketplaceContracts
+      tags: [Marketplace]
+      summary: List marketplace contracts
+      x-repository: MarketplaceContract
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: ./marketplace.schemas.yaml#/components/schemas/ContractStatus
+        - name: clientId
+          in: query
+          schema:
+            $ref: ./marketplace.schemas.yaml#/components/schemas/ClientId
+      responses:
+        '200':
+          description: Contracts
+          content:
+            application/json:
+              schema:
+                $ref: ./marketplace.schemas.yaml#/components/schemas/MarketplaceContractListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createMarketplaceContract
+      tags: [Marketplace]
+      summary: Create marketplace / copy follow contract
+      x-repository: MarketplaceContract
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./marketplace.schemas.yaml#/components/schemas/MarketplaceContractCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./marketplace.schemas.yaml#/components/schemas/MarketplaceContractResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/marketplace/contracts/{contractId}:
+    get:
+      operationId: getMarketplaceContract
+      tags: [Marketplace]
+      summary: Get marketplace contract
+      x-repository: MarketplaceContract
+      parameters:
+        - name: contractId
+          in: path
+          required: true
+          schema:
+            $ref: ./marketplace.schemas.yaml#/components/schemas/MarketplaceContractId
+      responses:
+        '200':
+          description: Contract
+          content:
+            application/json:
+              schema:
+                $ref: ./marketplace.schemas.yaml#/components/schemas/MarketplaceContractResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

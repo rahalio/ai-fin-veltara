@@ -1,0 +1,84 @@
+openapi: 3.1.0
+info:
+  title: Audit schemas
+  version: 0.1.0
+  description: |
+    Period advice audit exports for regulators and internal conduct review.
+paths: {}
+components:
+  schemas:
+    AdviceAuditExportId:
+      type: string
+      pattern: '^aud_[0-9A-HJKMNP-TV-Z]{26}$'
+    ClientId:
+      type: string
+      pattern: '^cli_[0-9A-HJKMNP-TV-Z]{26}$'
+    ExportStatus:
+      type: string
+      enum: [queued, running, done, failed]
+    AdviceAuditExport:
+      type: object
+      required: [id, from, to, status, createdAt]
+      x-dynamodb:
+        entityType: "ADVICE_AUDIT_EXPORT"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "ADVICE_AUDIT_EXPORT#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/AdviceAuditExportId'
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/ExportStatus'
+        downloadUrl:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+    AdviceAuditExportCreate:
+      type: object
+      required: [from, to]
+      properties:
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        from:
+          type: string
+          format: date-time
+        to:
+          type: string
+          format: date-time
+    AdviceAuditExportResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AdviceAuditExport'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AdviceAuditExportListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdviceAuditExport'
+    AdviceAuditExportListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AdviceAuditExportListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

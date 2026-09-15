@@ -1,0 +1,257 @@
+openapi: 3.1.0
+info:
+  title: Strategies schemas
+  version: 0.1.0
+  description: |
+    Strategy packages, model versions, and licensed advisors.
+paths: {}
+components:
+  schemas:
+    StrategyId:
+      type: string
+      pattern: '^stg_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    ModelVersionId:
+      type: string
+      pattern: '^stg_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    AdvisorId:
+      type: string
+      pattern: '^stg_[0-9A-HJKMNP-TV-Z]{26}$'
+$'
+    Provenance:
+      type: string
+      enum: [ai, human, hybrid]
+    EvidenceStatus:
+      type: string
+      enum: [unverified, verified, rejected]
+    StrategyStatus:
+      type: string
+      enum: [draft, published, frozen, retired]
+    StrategyPackage:
+      type: object
+      required: [id, name, provenance, evidenceStatus, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "STRATEGY_PACKAGE"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "STRATEGY_PACKAGE#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/StrategyId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        thesis:
+          type: string
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+        modelVersionId:
+          $ref: '#/components/schemas/ModelVersionId'
+        advisorId:
+          $ref: '#/components/schemas/AdvisorId'
+        sharpeClaim:
+          type: number
+        maxDrawdownClaim:
+          type: number
+        evidenceStatus:
+          $ref: '#/components/schemas/EvidenceStatus'
+        status:
+          $ref: '#/components/schemas/StrategyStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    StrategyPackageCreate:
+      type: object
+      required: [name, provenance]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        thesis:
+          type: string
+        provenance:
+          $ref: '#/components/schemas/Provenance'
+        modelVersionId:
+          $ref: '#/components/schemas/ModelVersionId'
+        advisorId:
+          $ref: '#/components/schemas/AdvisorId'
+        sharpeClaim:
+          type: number
+        maxDrawdownClaim:
+          type: number
+        evidenceStatus:
+          $ref: '#/components/schemas/EvidenceStatus'
+    StrategyPackageUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        thesis:
+          type: string
+        evidenceStatus:
+          $ref: '#/components/schemas/EvidenceStatus'
+        status:
+          $ref: '#/components/schemas/StrategyStatus'
+        sharpeClaim:
+          type: number
+        maxDrawdownClaim:
+          type: number
+    ModelVersion:
+      type: object
+      required: [id, name, version, status, createdAt]
+      x-dynamodb:
+        entityType: "MODEL_VERSION"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "MODEL_VERSION#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/ModelVersionId'
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [active, retired]
+        createdAt:
+          type: string
+          format: date-time
+    ModelVersionCreate:
+      type: object
+      required: [name, version]
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+    Advisor:
+      type: object
+      required: [id, displayName, licenseAttested, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "ADVISOR"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "ADVISOR#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/AdvisorId'
+        displayName:
+          type: string
+        licenseAttested:
+          type: boolean
+        licenseRef:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, retired]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    AdvisorCreate:
+      type: object
+      required: [displayName, licenseAttested]
+      properties:
+        displayName:
+          type: string
+        licenseAttested:
+          type: boolean
+        licenseRef:
+          type: string
+    AdvisorUpdate:
+      type: object
+      properties:
+        displayName:
+          type: string
+        licenseAttested:
+          type: boolean
+        licenseRef:
+          type: string
+        status:
+          type: string
+          enum: [active, suspended, retired]
+    StrategyPackageResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/StrategyPackage'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    StrategyPackageListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StrategyPackage'
+    StrategyPackageListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/StrategyPackageListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ModelVersionResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelVersion'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    ModelVersionListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModelVersion'
+    ModelVersionListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/ModelVersionListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AdvisorResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/Advisor'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    AdvisorListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Advisor'
+    AdvisorListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/AdvisorListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

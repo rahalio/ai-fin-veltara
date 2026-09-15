@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Marketplace schemas
+  version: 0.1.0
+  description: |
+    Advice marketplace contracts for fees, copytrading scope, and disputes.
+paths: {}
+components:
+  schemas:
+    MarketplaceContractId:
+      type: string
+      pattern: '^mkt_[0-9A-HJKMNP-TV-Z]{26}$'
+    ClientId:
+      type: string
+      pattern: '^cli_[0-9A-HJKMNP-TV-Z]{26}$'
+    StrategyId:
+      type: string
+      pattern: '^str_[0-9A-HJKMNP-TV-Z]{26}$'
+    ContractStatus:
+      type: string
+      enum: [active, disputed, closed]
+    MarketplaceContract:
+      type: object
+      required: [id, clientId, strategyId, feeBps, takeRateBps, scope, status, createdAt, updatedAt]
+      x-dynamodb:
+        entityType: "MARKETPLACE_CONTRACT"
+        pkPatternTemplate: "TENANT#${tenantId}"
+        skPatternTemplate: "MARKETPLACE_CONTRACT#${id}"
+        pkPattern: "org"
+      properties:
+        id:
+          $ref: '#/components/schemas/MarketplaceContractId'
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        strategyId:
+          $ref: '#/components/schemas/StrategyId'
+        feeBps:
+          type: number
+          minimum: 0
+        takeRateBps:
+          type: number
+          minimum: 0
+          description: Host/Veltara take-rate disclosed to the firm (BR-11).
+        scope:
+          type: string
+        hardLossPct:
+          type: number
+        status:
+          $ref: '#/components/schemas/ContractStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    MarketplaceContractCreate:
+      type: object
+      required: [clientId, strategyId, feeBps, takeRateBps, scope]
+      properties:
+        clientId:
+          $ref: '#/components/schemas/ClientId'
+        strategyId:
+          $ref: '#/components/schemas/StrategyId'
+        feeBps:
+          type: number
+          minimum: 0
+        takeRateBps:
+          type: number
+          minimum: 0
+        scope:
+          type: string
+        hardLossPct:
+          type: number
+    MarketplaceContractResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/MarketplaceContract'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta
+    MarketplaceContractListData:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MarketplaceContract'
+    MarketplaceContractListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          $ref: '#/components/schemas/MarketplaceContractListData'
+        meta:
+          $ref: ./common/envelopes.yaml#/components/schemas/ResponseMeta

@@ -1,0 +1,159 @@
+openapi: 3.1.0
+info:
+  title: Recommendations API
+  version: 0.1.0
+  description: |
+    Profile-matched recommendation shortlists and pre-trade risk parameters (BR-1, BR-3, BR-5, BR-9).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: rec
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Recommendations
+    description: Profile-matched recommendations
+  - name: RiskParameters
+    description: Pre-trade risk parameter sets
+paths:
+  /v1/clients/{clientId}/recommendations:
+    parameters:
+      - name: clientId
+        in: path
+        required: true
+        schema:
+          $ref: ./recommendations.schemas.yaml#/components/schemas/ClientId
+    get:
+      operationId: listClientRecommendations
+      tags: [Recommendations]
+      summary: List recommendations for a client
+      x-repository: Recommendation
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationStatus
+      responses:
+        '200':
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createClientRecommendation
+      tags: [Recommendations]
+      summary: Generate or attach a recommendation shortlist item
+      x-repository: Recommendation
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '422':
+          $ref: ./common/responses.yaml#/components/responses/UnprocessableEntity
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/recommendations/{recommendationId}:
+    get:
+      operationId: getRecommendation
+      tags: [Recommendations]
+      summary: Get recommendation
+      x-repository: Recommendation
+      parameters:
+        - name: recommendationId
+          in: path
+          required: true
+          schema:
+            $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationId
+      responses:
+        '200':
+          description: Recommendation
+          content:
+            application/json:
+              schema:
+                $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/recommendations/{recommendationId}/risk-parameters:
+    parameters:
+      - name: recommendationId
+        in: path
+        required: true
+        schema:
+          $ref: ./recommendations.schemas.yaml#/components/schemas/RecommendationId
+    get:
+      operationId: getRecommendationRiskParameters
+      tags: [RiskParameters]
+      summary: Get attached risk parameter set
+      x-repository: RiskParameterSet
+      responses:
+        '200':
+          description: Risk parameters
+          content:
+            application/json:
+              schema:
+                $ref: ./recommendations.schemas.yaml#/components/schemas/RiskParameterSetResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    put:
+      operationId: upsertRecommendationRiskParameters
+      tags: [RiskParameters]
+      summary: Attach or update pre-trade risk parameters
+      x-repository: RiskParameterSet
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./recommendations.schemas.yaml#/components/schemas/RiskParameterSetUpsert
+      responses:
+        '200':
+          description: Upserted
+          content:
+            application/json:
+              schema:
+                $ref: ./recommendations.schemas.yaml#/components/schemas/RiskParameterSetResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

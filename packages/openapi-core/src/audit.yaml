@@ -1,0 +1,91 @@
+openapi: 3.1.0
+info:
+  title: Audit API
+  version: 0.1.0
+  description: |
+    Period advice audit export packs for regulators and internal audit (BR-8).
+  license:
+    name: Proprietary
+    url: https://veltara.local/license
+  x-domain: aud
+servers:
+  - url: https://api.veltara.local
+    description: Local / Veltara API
+security:
+  - apiKey: []
+tags:
+  - name: Audit
+    description: Advice audit exports
+paths:
+  /v1/audit/exports:
+    get:
+      operationId: listAdviceAuditExports
+      tags: [Audit]
+      summary: List advice audit exports
+      x-repository: AdviceAuditExport
+      responses:
+        '200':
+          description: Exports
+          content:
+            application/json:
+              schema:
+                $ref: ./audit.schemas.yaml#/components/schemas/AdviceAuditExportListResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+    post:
+      operationId: createAdviceAuditExport
+      tags: [Audit]
+      summary: Request a period advice audit export
+      x-repository: AdviceAuditExport
+      parameters:
+        - $ref: ./common/parameters.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: ./audit.schemas.yaml#/components/schemas/AdviceAuditExportCreate
+      responses:
+        '201':
+          description: Export queued
+          content:
+            application/json:
+              schema:
+                $ref: ./audit.schemas.yaml#/components/schemas/AdviceAuditExportResponse
+        '400':
+          $ref: ./common/responses.yaml#/components/responses/BadRequest
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+  /v1/audit/exports/{exportId}:
+    get:
+      operationId: getAdviceAuditExport
+      tags: [Audit]
+      summary: Get advice audit export status
+      x-repository: AdviceAuditExport
+      parameters:
+        - name: exportId
+          in: path
+          required: true
+          schema:
+            $ref: ./audit.schemas.yaml#/components/schemas/AdviceAuditExportId
+      responses:
+        '200':
+          description: Export
+          content:
+            application/json:
+              schema:
+                $ref: ./audit.schemas.yaml#/components/schemas/AdviceAuditExportResponse
+        '401':
+          $ref: ./common/responses.yaml#/components/responses/Unauthorized
+        '404':
+          $ref: ./common/responses.yaml#/components/responses/NotFound
+        default:
+          $ref: ./common/responses.yaml#/components/responses/Problem
+components:
+  securitySchemes:
+    apiKey:
+      $ref: ./common/security.yaml#/components/securitySchemes/apiKey

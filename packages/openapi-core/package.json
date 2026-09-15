@@ -1,0 +1,18 @@
+{
+  "name": "@veltara/openapi-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenAPI contracts for Veltara (common + domain YAMLs)",
+  "scripts": {
+    "lint:domains": "redocly lint",
+    "bundle:domains": "mkdir -p src/.bundled && redocly bundle identity --output src/.bundled/identity.openapi.yaml && redocly bundle identity --output src/.bundled/identity.json && redocly bundle profiles --output src/.bundled/profiles.openapi.yaml && redocly bundle profiles --output src/.bundled/profiles.json && redocly bundle strategies --output src/.bundled/strategies.openapi.yaml && redocly bundle strategies --output src/.bundled/strategies.json && redocly bundle recommendations --output src/.bundled/recommendations.openapi.yaml && redocly bundle recommendations --output src/.bundled/recommendations.json && redocly bundle gates --output src/.bundled/gates.openapi.yaml && redocly bundle gates --output src/.bundled/gates.json && redocly bundle marketplace --output src/.bundled/marketplace.openapi.yaml && redocly bundle marketplace --output src/.bundled/marketplace.json && redocly bundle freezes --output src/.bundled/freezes.openapi.yaml && redocly bundle freezes --output src/.bundled/freezes.json && redocly bundle audit --output src/.bundled/audit.openapi.yaml && redocly bundle audit --output src/.bundled/audit.json",
+    "lint": "pnpm run lint:domains",
+    "bundle": "pnpm run bundle:domains"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^1.34.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

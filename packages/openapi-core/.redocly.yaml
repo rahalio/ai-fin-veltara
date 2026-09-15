@@ -1,0 +1,34 @@
+apis:
+  identity:
+    root: src/identity.yaml
+  profiles:
+    root: src/profiles.yaml
+  strategies:
+    root: src/strategies.yaml
+  recommendations:
+    root: src/recommendations.yaml
+  gates:
+    root: src/gates.yaml
+  marketplace:
+    root: src/marketplace.yaml
+  freezes:
+    root: src/freezes.yaml
+  audit:
+    root: src/audit.yaml
+
+extends:
+  - recommended
+
+rules:
+  no-unused-components: off
+  operation-4xx-response: warn
+  info-license: off
+  info-license-url: off
+  tag-description: off
+  operation-operationId: error
+  no-invalid-media-type-examples: off
+
+theme:
+  openapi:
+    generateCodeSamples:
+      languages: []
